@@ -38,3 +38,8 @@ CREATE TABLE characteristic_reviews (
   review_id             integer REFERENCES reviews(id),
   value                 integer NOT NULL
 );
+
+COPY reviews FROM '/Users/gianlazaro/Desktop/RatingsAndReviews/reviews.csv' csv header;
+COPY characteristics FROM '/Users/gianlazaro/Desktop/RatingsAndReviews/characteristics.csv' csv header;
+COPY characteristic_reviews FROM '/Users/gianlazaro/Desktop/RatingsAndReviews/characteristic_reviews.csv' csv header;
+COPY reviews_photos FROM '/Users/gianlazaro/Desktop/RatingsAndReviews/reviews_photos.csv' csv header;
