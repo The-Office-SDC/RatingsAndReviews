@@ -19,6 +19,17 @@ app.get('/reviews', (req, res) => {
     }
   }
 
+    // SELECT json_object_agg(objtwo, json_build_object('value', objthree, 'id', objfour))
+    // FROM (SELECT c.name AS objtwo, AVG(cr.value) AS objthree, c.id AS objfour
+    //   FROM
+    //     characteristic_reviews cr
+    //     FULL OUTER JOIN characteristics c
+    //     ON cr.characteristics_id = c.id
+    //     WHERE c.product_id = 40436
+    //     GROUP BY c.name, c.id
+    //   ) AS objone
+
+
   // makes it so it doesn't populate data on page ZERO
   const offset = (page * count) - count;
 
@@ -33,7 +44,15 @@ app.get('/reviews', (req, res) => {
 app.get('/reviews/meta', (req, res) => {
   const { product_id } = req.query;
   pool.query(`
-  SELECT r.product_id, ( SELECT json_object_agg(objthree, objtwo) FROM ( SELECT reviews.rating AS objthree, COUNT(*) AS objtwo FROM reviews WHERE reviews.product_id = $1 GROUP BY reviews.rating) AS objone ) ratings, ( SELECT json_object_agg(objtwo, objone) FROM ( SELECT r.recommend AS objtwo, COUNT (*) AS objone FROM reviews r WHERE r.product_id = $1 GROUP BY r.recommend ) AS objthree ) recommended, ( SELECT json_object_agg(c.name, json_build_object('value', cr.value,'id', cr.id)) FROM characteristic_reviews cr FULL OUTER JOIN characteristics c ON cr.id = c.id WHERE c.product_id = $1 ) characteristics FROM reviews r WHERE r.product_id = $1
+  SELECT r.product_id, ( SELECT json_object_agg(objthree, objtwo) FROM ( SELECT reviews.rating AS objthree, COUNT(*) AS objtwo FROM reviews WHERE reviews.product_id = $1 GROUP BY reviews.rating) AS objone ) ratings, ( SELECT json_object_agg(objtwo, objone) FROM ( SELECT r.recommend AS objtwo, COUNT (*) AS objone FROM reviews r WHERE r.product_id = $1 GROUP BY r.recommend ) AS objthree ) recommended, (     SELECT json_object_agg(objtwo, json_build_object('value', objthree, 'id', objfour))
+  FROM (SELECT c.name AS objtwo, AVG(cr.value) AS objthree, c.id AS objfour
+    FROM
+      characteristic_reviews cr
+      FULL OUTER JOIN characteristics c
+      ON cr.characteristics_id = c.id
+      WHERE c.product_id = $1
+      GROUP BY c.name, c.id
+    ) AS objone ) characteristics FROM reviews r WHERE r.product_id = $1
   `, [product_id], (err, results) => {
     res.send(results.rows[0]);
   })
