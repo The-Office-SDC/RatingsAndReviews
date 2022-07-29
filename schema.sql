@@ -23,7 +23,7 @@ CREATE TABLE reviews (
 CREATE TABLE reviews_photos (
   id            serial NOT NULL PRIMARY KEY,
   review_id     integer REFERENCES reviews(id) NOT NULL,
-  url           text NOT NULL DEFAULT '{}'
+  url           text NOT NULL
 );
 
 CREATE TABLE characteristics (
@@ -50,3 +50,11 @@ SELECT setval(pg_get_serial_sequence('characteristics', 'id'), coalesce(max(id)+
 SELECT setval(pg_get_serial_sequence('characteristic_reviews', 'id'), coalesce(max(id)+1, 1), false) FROM characteristic_reviews;
 SELECT setval(pg_get_serial_sequence('reviews_photos', 'id'), coalesce(max(id)+1, 1), false) FROM reviews_photos;
 SELECT setval(pg_get_serial_sequence('reviews', 'id'), coalesce(max(id)+1, 1), false) FROM reviews;
+
+CREATE INDEX ON reviews (product_id, rating, recommend);
+
+CREATE INDEX ON characteristics (product_id);
+
+CREATE INDEX ON characteristic_reviews (value, review_id, characteristics_id);
+
+CREATE INDEX ON reviews_photos (review_id);

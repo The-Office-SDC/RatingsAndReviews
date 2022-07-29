@@ -22,11 +22,10 @@ app.get('/reviews', (req, res) => {
   // makes it so it doesn't populate data on page ZERO
   const offset = (page * count) - count;
 
-  pool.query(`
-  SELECT r.id review_id, r.rating, r.summary, r.recommend, r.response, r.body, r.date, r.reviewer_name, r.helpfulness, json_agg(rp) photos FROM reviews r LEFT OUTER JOIN reviews_photos rp ON rp.review_id = r.id WHERE r.product_id = $2 AND r.reported = FALSE GROUP BY r.id, rp.* ORDER BY ${sorter(sort)} DESC LIMIT $1 OFFSET $3
+  pool.query(`SELECT json_agg(objone) results FROM ( SELECT r.id review_id, r.rating, r.summary, r.recommend, r.response, r.body, r.date, r.reviewer_name, r.helpfulness, json_agg(rp) photos FROM reviews r LEFT OUTER JOIN reviews_photos rp ON rp.review_id = r.id WHERE r.product_id = $2 AND r.reported = FALSE GROUP BY r.id, rp.* ORDER BY ${sorter(sort)} DESC LIMIT $1 OFFSET $3 ) AS objone
   `, [count, product_id, offset], (err, results) => {
     if (err) throw err;
-    res.send(results.rows);
+    res.send(results.rows[0]);
   });
 })
 
