@@ -51,10 +51,17 @@ SELECT setval(pg_get_serial_sequence('characteristic_reviews', 'id'), coalesce(m
 SELECT setval(pg_get_serial_sequence('reviews_photos', 'id'), coalesce(max(id)+1, 1), false) FROM reviews_photos;
 SELECT setval(pg_get_serial_sequence('reviews', 'id'), coalesce(max(id)+1, 1), false) FROM reviews;
 
-CREATE INDEX ON reviews (product_id, rating, recommend);
+CREATE INDEX ON reviews (product_id);
+CREATE INDEX ON reviews (rating);
+-- CREATE INDEX ON reviews (recommend);
+CREATE INDEX ON reviews (helpfulness);
 
+CREATE INDEX ON characteristics (name);
 CREATE INDEX ON characteristics (product_id);
 
-CREATE INDEX ON characteristic_reviews (value, review_id, characteristics_id);
+CREATE INDEX ON characteristic_reviews (value);
+CREATE INDEX ON characteristic_reviews (review_id);
+CREATE INDEX ON characteristic_reviews (characteristics_id);
 
+-- CREATE INDEX ON reviews_photos (url);
 CREATE INDEX ON reviews_photos (review_id);

@@ -19,10 +19,11 @@ app.get('/reviews', (req, res) => {
     }
   }
 
+
   // makes it so it doesn't populate data on page ZERO
   const offset = (page * count) - count;
 
-  pool.query(`SELECT json_agg(objone) results FROM ( SELECT r.id review_id, r.rating, r.summary, r.recommend, r.response, r.body, r.date, r.reviewer_name, r.helpfulness, json_agg(rp) photos FROM reviews r LEFT OUTER JOIN reviews_photos rp ON rp.review_id = r.id WHERE r.product_id = $2 AND r.reported = FALSE GROUP BY r.id, rp.* ORDER BY ${sorter(sort)} DESC LIMIT $1 OFFSET $3 ) AS objone
+  pool.query(`SELECT json_agg(objone) results FROM ( SELECT r.id review_id, r.rating, r.summary, r.recommend, r.response, r.body, to_timestamp(r.date::bigint/1000) date, r.reviewer_name, r.helpfulness, (SELECT json_agg(rp.*) FROM reviews_photos rp WHERE rp.review_id = r.id) photos FROM reviews r WHERE r.product_id = $2 AND r.reported = FALSE GROUP BY r.id ORDER BY ${sorter(sort)} DESC LIMIT $1 OFFSET $3 ) AS objone
   `, [count, product_id, offset], (err, results) => {
     if (err) throw err;
     res.send(results.rows[0]);
@@ -40,7 +41,6 @@ app.get('/reviews/meta', (req, res) => {
 
 const date = new Date();
 
-// !FIX ARRAYS IN PHOTOS
 app.post('/reviews', async (req, res) => {
   const { product_id, rating, summary, body, recommend, name, email, photos, characteristics
 } = req.body;
@@ -48,9 +48,14 @@ app.post('/reviews', async (req, res) => {
     INSERT INTO reviews (product_id, rating, date, summary, body, recommend, reviewer_name, reviewer_email) VALUES ($1::integer, $2::integer, $3::text, $4, $5, $6, $7, $8) RETURNING id;
   `, [product_id, rating, +date, summary, body, recommend, name, email]);
 
-  if (photos.length !== 0) {
-    pool.query(`INSERT INTO reviews_photos (review_id, url) VALUES ($1::integer, $2::text)
-    `, [review_id.rows[0].id, photos]);
+  // photos sent to the server is an array
+  // if there are no photos, an empty array is sent
+
+  if (photos.length > 0) {
+    photos.forEach((photo_url) => {
+      pool.query(`INSERT INTO reviews_photos (review_id, url) VALUES ($1::integer, $2::text)
+      `, [review_id.rows[0].id, photo_url]);
+    })
   }
 
   if (Object.keys(characteristics).length > 0) {
@@ -60,7 +65,7 @@ app.post('/reviews', async (req, res) => {
       `, [char_key, review_id.rows[0].id, characteristics[char_key]]);
     }
   }
-  res.send('yusssss');
+  res.status(201).send(`${review_id.rows[0].id}`);
 });
 
 app.put('/reviews/:review_id/helpful', (req, res) => {
