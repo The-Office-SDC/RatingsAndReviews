@@ -7,7 +7,7 @@
     "test": "npx mocha tests",
     "coverage": "npx c8 node server/index.js",
     "start": "nodemon server/index.js",
-    "database": "psql postgres < schema.pgsql"
+    "database": "psql postgres < rr.pgsql"
   },
   "repository": {
     "type": "git",
