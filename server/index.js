@@ -7,7 +7,7 @@ const PORT = 3000 || process.env.PORT;
 app.use(express.json());
 
 app.get('/reviews', (req, res) => {
-  const { page, count, sort, product_id } = req.query;
+  const { page = 1, count = 5, sort, product_id } = req.query;
 
   const sorter = function(srt) {
     if(srt === 'helpful') {
@@ -19,11 +19,10 @@ app.get('/reviews', (req, res) => {
     }
   }
 
-
   // makes it so it doesn't populate data on page ZERO
   const offset = (page * count) - count;
 
-  pool.query(`SELECT json_agg(objone) results FROM ( SELECT r.id review_id, r.rating, r.summary, r.recommend, r.response, r.body, to_timestamp(r.date::bigint/1000) date, r.reviewer_name, r.helpfulness, (SELECT json_agg(rp.*) FROM reviews_photos rp WHERE rp.review_id = r.id) photos FROM reviews r WHERE r.product_id = $2 AND r.reported = FALSE GROUP BY r.id ORDER BY ${sorter(sort)} DESC LIMIT $1 OFFSET $3 ) AS objone
+  pool.query(`SELECT json_agg(objone) results FROM ( SELECT r.id review_id, r.rating, r.summary, r.recommend, NULLIF(r.response, 'null') response, r.body, to_timestamp(r.date::bigint/1000) date, r.reviewer_name, r.helpfulness, COALESCE((SELECT json_agg(rp.*) FROM reviews_photos rp WHERE rp.review_id = r.id), '[]') photos FROM reviews r WHERE r.product_id = $2 AND r.reported = FALSE GROUP BY r.id ORDER BY ${sorter(sort)} DESC LIMIT $1 OFFSET $3::integer ) AS objone
   `, [count, product_id, offset], (err, results) => {
     if (err) throw err;
     res.send(results.rows[0]);

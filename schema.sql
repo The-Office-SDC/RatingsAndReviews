@@ -16,7 +16,7 @@ CREATE TABLE reviews (
   reported        boolean NOT NULL DEFAULT false,
   reviewer_name   text NOT NULL,
   reviewer_email  text NOT NULL,
-  response        text,
+  response        text DEFAULT NULL,
   helpfulness     integer NOT NULL DEFAULT 0
 );
 
