@@ -28,7 +28,7 @@ CREATE TABLE reviews_photos (
 
 CREATE TABLE characteristics (
   id            serial PRIMARY KEY NOT NULL,
-  product_id    integer REFERENCES reviews NOT NULL,
+  product_id    integer NOT NULL,
   name          text
 );
 
