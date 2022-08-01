@@ -7,7 +7,7 @@
     "test": "npx mocha tests",
     "coverage": "npx c8 node server/index.js",
     "start": "nodemon server/index.js",
-    "database": "psql postgres < schema.sql"
+    "database": "psql postgres < schema.pgsql"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,7 @@
   "homepage": "https://github.com/The-Office-SDC/RatingsAndReviews#readme",
   "dependencies": {
     "chai": "^4.3.6",
+    "dotenv": "^16.0.1",
     "express": "^4.18.1",
     "mocha": "^10.0.0",
     "nodemon": "^2.0.19",
