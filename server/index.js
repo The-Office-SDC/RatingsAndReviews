@@ -13,6 +13,10 @@ const {
 const PORT = 3000 || process.env.PORT;
 app.use(express.json());
 
+app.get('/test', (req, res) => {
+  res.send('This route is a test');
+});
+
 app.get('/reviews', getAll);
 app.get('/reviews/meta', getMeta);
 app.post('/reviews', postReview);
