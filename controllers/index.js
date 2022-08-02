@@ -18,7 +18,9 @@ module.exports = {
     const offset = (page * count) - count;
     pool.query(`SELECT json_agg(objone) results FROM ( SELECT r.id review_id, r.rating, r.summary, r.recommend, NULLIF(r.response, 'null') response, r.body, to_timestamp(r.date::bigint/1000) date, r.reviewer_name, r.helpfulness, COALESCE((SELECT json_agg(rp.*) FROM reviews_photos rp WHERE rp.review_id = r.id), '[]') photos FROM reviews r WHERE r.product_id = $2 AND r.reported = FALSE GROUP BY r.id ORDER BY ${sorter(sort)} DESC LIMIT $1 OFFSET $3::integer ) AS objone
   `, [count, product_id, offset], (err, results) => {
-      if (err) throw err;
+      if (err) {
+        res.sendStatus(400);
+      };
       res.send(results.rows[0]);
     });
   },
@@ -28,7 +30,9 @@ module.exports = {
     pool.query(`
   SELECT r.product_id, ( SELECT json_object_agg(objthree, objtwo) FROM ( SELECT reviews.rating AS objthree, COUNT(*) AS objtwo FROM reviews WHERE reviews.product_id = $1 GROUP BY reviews.rating) AS objone ) ratings, ( SELECT json_object_agg(objtwo, objone) FROM ( SELECT r.recommend AS objtwo, COUNT (*) AS objone FROM reviews r WHERE r.product_id = $1 GROUP BY r.recommend ) AS objthree ) recommended, ( SELECT json_object_agg(objtwo, json_build_object('value', objthree, 'id', objfour)) FROM ( SELECT c.name AS objtwo, AVG(cr.value) AS objthree, c.id AS objfour FROM characteristic_reviews cr FULL OUTER JOIN characteristics c ON cr.characteristics_id = c.id WHERE c.product_id = $1 GROUP BY c.name, c.id ) AS objone ) characteristics FROM reviews r WHERE r.product_id = $1
   `, [product_id], (err, results) => {
-      if (err) throw err;
+    if (err) {
+      res.sendStatus(400);
+    };
       res.send(results.rows[0]);
     })
   },
