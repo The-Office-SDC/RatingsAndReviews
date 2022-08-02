@@ -12,7 +12,7 @@ export default function k6test() {
   const url = new URL('http://localhost:3000/reviews/meta');
 
   url.searchParams.append('product_id', randomIntBetween(900000, 999999));
-  url.searchParams.append('count', 100);
+  url.searchParams.append('count', 500);
   url.searchParams.append('page', 1);
 
   http.get(url.toString());

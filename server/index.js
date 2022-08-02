@@ -12,11 +12,15 @@ const {
 
 const PORT = 3000 || process.env.PORT;
 app.use(express.json());
+app.use(express.static('./static'));
 
 app.get('/test', (req, res) => {
   res.send('this is a test route');
 });
 
+app.get('/', (req, res) => {
+  res.send()
+});
 app.get('/reviews', getAll);
 app.get('/reviews/meta', getMeta);
 app.post('/reviews', postReview);
