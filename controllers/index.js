@@ -3,7 +3,7 @@ const pool = require('../model/db.js');
 module.exports = {
   getAll: (req, res) => {
     const { page = 1, count = 5, sort, product_id } = req.query;
-    console.log(pool.options)
+    console.log(product_id);
     const sorter = function (srt) {
       if (srt === 'helpful') {
         return 'r.helpfulness'
@@ -24,6 +24,7 @@ module.exports = {
   },
   getMeta: (req, res) => {
     const { product_id } = req.query;
+    console.log(product_id);
     pool.query(`
   SELECT r.product_id, ( SELECT json_object_agg(objthree, objtwo) FROM ( SELECT reviews.rating AS objthree, COUNT(*) AS objtwo FROM reviews WHERE reviews.product_id = $1 GROUP BY reviews.rating) AS objone ) ratings, ( SELECT json_object_agg(objtwo, objone) FROM ( SELECT r.recommend AS objtwo, COUNT (*) AS objone FROM reviews r WHERE r.product_id = $1 GROUP BY r.recommend ) AS objthree ) recommended, ( SELECT json_object_agg(objtwo, json_build_object('value', objthree, 'id', objfour)) FROM ( SELECT c.name AS objtwo, AVG(cr.value) AS objthree, c.id AS objfour FROM characteristic_reviews cr FULL OUTER JOIN characteristics c ON cr.characteristics_id = c.id WHERE c.product_id = $1 GROUP BY c.name, c.id ) AS objone ) characteristics FROM reviews r WHERE r.product_id = $1
   `, [product_id], (err, results) => {
