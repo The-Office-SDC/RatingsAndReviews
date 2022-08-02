@@ -3,7 +3,7 @@ const pool = require('../model/db.js');
 module.exports = {
   getAll: (req, res) => {
     const { page = 1, count = 5, sort, product_id } = req.query;
-
+    console.log(pool.options);
     const sorter = function (srt) {
       if (srt === 'helpful') {
         return 'r.helpfulness'
@@ -16,9 +16,9 @@ module.exports = {
 
     // makes it so it doesn't populate data on page ZERO
     const offset = (page * count) - count;
-
     pool.query(`SELECT json_agg(objone) results FROM ( SELECT r.id review_id, r.rating, r.summary, r.recommend, NULLIF(r.response, 'null') response, r.body, to_timestamp(r.date::bigint/1000) date, r.reviewer_name, r.helpfulness, COALESCE((SELECT json_agg(rp.*) FROM reviews_photos rp WHERE rp.review_id = r.id), '[]') photos FROM reviews r WHERE r.product_id = $2 AND r.reported = FALSE GROUP BY r.id ORDER BY ${sorter(sort)} DESC LIMIT $1 OFFSET $3::integer ) AS objone
   `, [count, product_id, offset], (err, results) => {
+      console.log('in here');
       if (err) throw err;
       res.send(results.rows[0]);
     });
